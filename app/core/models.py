@@ -7,7 +7,7 @@ from django.contrib.auth.models import (
     BaseUserManager,
     PermissionsMixin
 )
-
+from django.conf import settings
 
 class UserManager(BaseUserManager):
     """Manager for user."""
@@ -42,3 +42,28 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
 
     USERNAME_FIELD = 'email'
+
+
+class Tag(models.Model):
+    """Tag for filtering recipes."""
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
+
+class Blog(models.Model):
+    """Blog model."""
+    title = models.CharField(max_length=50, blank=False)
+    excerpt = models.TextField(blank=False)
+    content = models.TextField(blank=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        )
+    tags = models.ManyToManyField('Tag')
+
+    def __str__(self):
+        return self.title

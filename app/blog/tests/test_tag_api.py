@@ -10,8 +10,7 @@ from rest_framework import status
 from rest_framework.test import APIClient
 
 from core.models import (
-    Tag,
-    Blog
+    Tag
 )
 
 from blog.serializers import TagSerializer

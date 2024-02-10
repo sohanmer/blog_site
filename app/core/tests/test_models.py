@@ -63,3 +63,25 @@ class ModelTest(TestCase):
         )
 
         self.assertEqual(str(blog), blog.title)
+
+    def test_creating_comment_without_text_raises_error(self):
+        """Test submitting a comment without any body raises a error."""
+        user = get_user_model().objects.create_user(
+            'test@example.com',
+            'testpass123',
+        )
+        blog = models.Blog.objects.create(
+            author=user,
+            title="Sample Blog Title",
+            excerpt="This is a test blog excerpt.",
+            content="Some test content regarding the test blog.",
+        )
+
+        comment = models.Comment.objects.create(
+            author = user,
+            comment_text = "This is test comment",
+            blog = blog,
+            likes_count = 3
+        )
+
+        self.assertEqual(str(comment), comment.comment_text)

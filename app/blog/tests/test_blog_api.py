@@ -13,6 +13,7 @@ from rest_framework.test import APIClient
 from core.models import (
     Blog,
     Tag,
+    Comment,
 )
 
 from blog.serializers import (
@@ -22,6 +23,8 @@ from blog.serializers import (
 
 BLOG_URL = reverse('blog:blog-list')
 
+def blog_comments_url(blog_id):
+    return reverse('blog:comment-list', args=blog_id)
 
 def detail_url(blog_id):
     """Create and return a blog detail URL."""
@@ -164,3 +167,28 @@ class PrivateBlogAPITests(TestCase):
 
         self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
         self.assertTrue(Blog.objects.filter(id=blog.id).exists())
+
+    def test_retrieving_blog_comments(self):
+        """Test retrieving all blog comments."""
+        user2 = create_user(email='user2@example.com', password='testpass123')
+        blog = create_blog(author=self.user)
+        comment1 = Comment.objects.create(
+            comment_text = "This is a test comment.",
+            author = self.user,
+            blog = blog,
+            likes_count = 5
+        )
+        comment2 = Comment.objects.create(
+            comment_text = "This is a another comment.",
+            author = user2,
+            blog = blog,
+            likes_count = 2
+        )
+
+        url = detail_url(blog_id=blog.id)
+        res = self.client.get(url)
+        
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(res.data['comments']), 2)
+        self.assertEqual(Comment.objects.get(id=res.data['comments'][0]['author']).author, self.user)
+        self.assertEqual(Comment.objects.get(id=res.data['comments'][1]['author']).author, user2)

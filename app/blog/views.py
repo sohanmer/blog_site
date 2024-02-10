@@ -17,6 +17,7 @@ from rest_framework.views import APIView
 from core.models import (
     Blog,
     Tag,
+    Comment,
 )
 from blog import serializers
 
@@ -45,3 +46,30 @@ class TagViewSet(viewsets.ModelViewSet):
 
     serializer_class = serializers.TagSerializer
     queryset = Tag.objects.all().order_by('-name').distinct()
+
+
+class CommentViewSet(
+        viewsets.ModelViewSet,
+        mixins.UpdateModelMixin,
+        mixins.DestroyModelMixin,
+        mixins.ListModelMixin
+    ):
+    """Manage comments in the database."""
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get_serializer_class(self):
+        serializer_class = self.serializer_class
+        if self.request.method == 'PATCH':
+            serializer_class = serializers.CommentPutSerializer
+        else:
+            serializer_class = serializers.CommentPostSerializer
+
+        return serializer_class
+
+    queryset = Comment.objects.all().order_by('-id')
+
+    
+    def perform_create(self, serializer):
+        """Create a new comment."""
+        serializer.save(author=self.request.user)

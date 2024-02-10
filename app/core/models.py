@@ -8,6 +8,7 @@ from django.contrib.auth.models import (
     PermissionsMixin
 )
 from django.conf import settings
+from django.core.validators import MinLengthValidator
 
 class UserManager(BaseUserManager):
     """Manager for user."""
@@ -57,13 +58,26 @@ class Blog(models.Model):
     title = models.CharField(max_length=50, blank=False)
     excerpt = models.TextField(blank=False)
     content = models.TextField(blank=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         )
     tags = models.ManyToManyField('Tag')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.title
+    
+
+class Comment(models.Model):
+    """Comment model."""
+    comment_text = models.CharField(max_length=255, validators=[MinLengthValidator(1)])
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    blog = models.ForeignKey('Blog', related_name='comments', on_delete=models.CASCADE)
+    likes_count = models.PositiveIntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.comment_text

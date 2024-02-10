@@ -6,6 +6,7 @@ from rest_framework import serializers
 from core.models import (
     Blog,
     Tag,
+    Comment,
 )
 
 
@@ -17,9 +18,54 @@ class TagSerializer(serializers.ModelSerializer):
         read_only_fields = ['id']
 
 
+class CommentPostSerializer(serializers.ModelSerializer):
+    """Serializer for comments."""
+    class Meta:
+        model = Comment
+        fields = [
+            'id', 
+            'comment_text', 
+            'likes_count',
+            'author',
+            'blog',
+            ]
+        read_only_fields = [
+            'id',
+            ]
+
+    def create(self, validated_data):
+        """Create a Comment."""
+        comment = Comment.objects.create(**validated_data)
+
+        return comment
+    
+class CommentPutSerializer(serializers.ModelSerializer):
+    """Serializer for comments."""
+    class Meta:
+        model = Comment
+        fields = [
+            'id', 
+            'comment_text', 
+            'likes_count',
+            ]
+        read_only_fields = [
+            'id',
+            'author',
+            'blog'
+            ]
+
+    def create(self, validated_data):
+        """Create a Comment."""
+        comment = Comment.objects.create(**validated_data)
+
+        return comment
+
+
+
 class BlogSerializer(serializers.ModelSerializer):
     """Serializer for Blog."""
     tags = TagSerializer(many=True, required=False)
+    comments = CommentPostSerializer(many=True, required=False)
     class Meta:
         model = Blog
         fields = [
@@ -27,7 +73,8 @@ class BlogSerializer(serializers.ModelSerializer):
             'title',
             'excerpt',
             'content',
-            'tags'
+            'tags',
+            'comments'
         ]
         read_only_fields = ['id']
 
